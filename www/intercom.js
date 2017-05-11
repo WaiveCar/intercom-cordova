@@ -19,6 +19,10 @@ var intercom = {
         cordova.exec(success, error, 'Intercom', 'updateUser', [attributes]);
     },
 
+    setBottomPadding: function(bottomPadding, success, error) {
+        cordova.exec(success, error, 'Intercom', 'setBottomPadding', [bottomPadding]);
+    },
+
     logEvent: function(eventName, metaData, success, error) {
         cordova.exec(success, error, 'Intercom', 'logEvent', [eventName, metaData]);
     },

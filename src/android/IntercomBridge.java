@@ -174,6 +174,12 @@ public class IntercomBridge extends CordovaPlugin {
                 callbackContext.success();
             }
         },
+        setBottomPadding {
+            @Override void performAction(JSONArray args, CallbackContext callbackContext, CordovaInterface cordova) {
+                Intercom.client().setBottomPadding(args.optInt(0));
+                callbackContext.success();
+            }
+        },
         setLauncherVisibility {
             @Override void performAction(JSONArray args, CallbackContext callbackContext, CordovaInterface cordova) {
                 String visibilityString = args.optString(0);
