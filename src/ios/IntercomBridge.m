@@ -116,7 +116,8 @@
 }
 
 - (void)setBottomPadding:(CDVInvokedUrlCommand*)command {
-    [Intercom setBottomPadding: command.arguments[0].integerValue];
+    int padding = [[command.arguments objectAtIndex:0] intValue];
+    [Intercom setBottomPadding: padding];
     [self sendSuccess:command];
 }
 
