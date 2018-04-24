@@ -122,7 +122,11 @@
     [self sendSuccess:command];
 }
 
-
+- (void)setBottomPadding:(CDVInvokedUrlCommand*)command {
+    int padding = [[command.arguments objectAtIndex:0] intValue];
+    [Intercom setBottomPadding: padding];
+    [self sendSuccess:command];
+}
 
 - (void)setLauncherVisibility:(CDVInvokedUrlCommand*)command {
     NSString *visibilityString = command.arguments[0];

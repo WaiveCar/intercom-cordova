@@ -20,6 +20,8 @@
 - (void)displayMessageComposerWithInitialMessage:(CDVInvokedUrlCommand*)command;
 - (void)displayConversationsList:(CDVInvokedUrlCommand*)command;
 
+- (void)setBottomPadding:(CDVInvokedUrlCommand*)command;
+
 - (void)setLauncherVisibility:(CDVInvokedUrlCommand*)command;
 - (void)setInAppMessageVisibility:(CDVInvokedUrlCommand*)command;
 - (void)hideMessenger:(CDVInvokedUrlCommand*)command;
