@@ -1,5 +1,82 @@
 # Intercom for Cordova/PhoneGap
 
+## 5.1.1 (2018-02-26)
+
+* Include FCM libraries when building without build plugin [#257](https://github.com/intercom/intercom-cordova/pull/257)
+
+## 5.1.0 (2018-02-26)
+
+* Created fork of `phonegap-plugin-push` to allow it to work with this plugin: https://github.com/intercom/phonegap-plugin-push
+* Allow FCM notifications without applying build plugin [#253](https://github.com/intercom/intercom-cordova/pull/253)
+* Update recommended build tool & library versions [#252](https://github.com/intercom/intercom-cordova/pull/252)
+* Remove broken support for multiple GCM libraries [#251](https://github.com/intercom/intercom-cordova/pull/251)
+* Fix GCM sender ID reading [#250](https://github.com/intercom/intercom-cordova/pull/250)
+* Change hook for checkForUpdate to be after_prepare [#249](https://github.com/intercom/intercom-cordova/pull/249)
+
+## 5.0.2 (2018-02-12)
+
+* Fix issue with Intercom pod not being updated / installed when GitHub response was not 200 OK: [#246](https://github.com/intercom/intercom-cordova/pull/246)
+
+## 5.0.1 (2018-01-23)
+
+* Removes dependency on `PackageManager.GET_META_DATA`, which Cordova does not appear to generate any longer for new projects: [#239](https://github.com/intercom/intercom-cordova/issues/239).
+
+## 5.0.0 (2018-01-22)
+
+* Supports `cordova-android` 7.0.0, the default Android build version when using `cordova-cli` 8.0.0, though it may also be specified on earlier versions (tested on [Cordova 7.1.0](https://github.com/apache/cordova-cli/releases/tag/7.1.0))
+
+* Deprecates GCM as a push type in favor of FCM. This includes removing the ability to specify a GCM/FCM sender id directly from config.xml. To use push on Android, adding your google-services.json to the root of your project is now required.
+
+* Per the [`cordova-android` 7.0.0 release notes](cordova.apache.org/announcements/2017/12/04/cordova-android-7.0.0.html), the minimum Android API version supported is now API Level 19.
+
+---
+
+Update guide:
+
+1. If you have not already done so, update your `cordova-cli`:
+    ```
+    npm install -g cordova
+    cd my_project
+    cordova platform remove android
+    cordova platform add android@7.0.0
+    ```
+2. Update `plugin-cordova-intercom`:
+    ```
+    cordova plugin remove cordova-plugin-intercom
+    cordova plugin add cordova-plugin-intercom
+    ```
+3. Ensure your config.xml specifies an android-minSdkVersion at or above 19:
+    * `<preference name="android-minSdkVersion" value="19" />`
+4. To use push on Android:
+    * Ensure you've added `<preference name="intercom-android-push-type" value="FCM"/>` to your config.xml
+    * Copy your FCM `google-services.json` file to the root directory of your project.
+
+_NB: The above steps may not be exhaustive and are dependent on your app and system Cordova configuration_
+
+## 4.1.2 (2017-11-16)
+
+* Further fixes to issue with diagnostic messages on Android: [#219](https://github.com/intercom/intercom-cordova/issues/219).
+
+## 4.1.1 (2017-11-15)
+
+* Fixed issue with diagnostic messages on Android: [#219](https://github.com/intercom/intercom-cordova/issues/219).
+
+## 4.1.0 (2017-11-02)
+
+* Updated Intercom for Android to 4.1.x
+* Updated Intercom for iOS to 4.1.x
+* Added `intercom.logout()`.
+* Added diagnostic messages for Android build errors.
+
+## 4.0.0 (2017-08-29)
+
+* Updated Intercom for Android to 4.0.1
+* Updated Intercom for iOS to 4.0.1
+* Removed deprecated method `intercom.setSecureMode(hmac, data)`.
+* Added support for iOS 11.
+* Added support for Android Oreo.
+* Updated GCM & FCM to version 11.
+
 ## 3.2.2 (2017-05-17)
 
 * Prevent unsafe versions of the Support Library being used to fix [#182](https://github.com/intercom/intercom-cordova/issues/182).

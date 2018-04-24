@@ -4,8 +4,11 @@
 
 This is a plugin that allows your Cordova or PhoneGap app to use [Intercom for iOS](https://github.com/intercom/intercom-ios) and/or [Intercom for Android](https://github.com/intercom/intercom-android).
 
-* Intercom for iOS supports iOS 8, 9 & 10.
-* Intercom for Android supports API 15 and above.
+* Intercom for iOS supports iOS 8, 9, 10  & 11.
+* Intercom for Android supports API 19 and above.
+
+## Customer Support
+👋 We are moving all our issues support to our [Intercom Developer Hub available here](https://developers.intercom.com/docs/intercom-mobile-installation?utm_source=github&utm_campaign=cordova-help). If you bump into any problems or need more support, just start a conversation using Intercom there and it will be immediately routed to our Customer Support Engineers.
 
 ## Installation
 
@@ -19,7 +22,7 @@ cordova plugin add cordova-plugin-intercom
 
 To add the plugin to your PhoneGap app, add the following to your `config.xml`:
 ```xml
-<plugin name="cordova-plugin-intercom" version="~3.2.2" />
+<plugin name="cordova-plugin-intercom" version="~5.1.1" />
 ```
 ### Ionic
 

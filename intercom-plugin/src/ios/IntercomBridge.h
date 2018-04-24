@@ -6,9 +6,9 @@
 
 - (void)registerIdentifiedUser:(CDVInvokedUrlCommand*)command;
 - (void)registerUnidentifiedUser:(CDVInvokedUrlCommand*)command;
-- (void)reset:(CDVInvokedUrlCommand*)command;
+- (void)logout:(CDVInvokedUrlCommand*)command;
 
-- (void)setSecureMode:(CDVInvokedUrlCommand*)command;
+- (void)setUserHash:(CDVInvokedUrlCommand*)command;
 
 - (void)updateUser:(CDVInvokedUrlCommand*)command;
 - (void)logEvent:(CDVInvokedUrlCommand*)command;

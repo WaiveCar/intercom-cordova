@@ -1,38 +1,31 @@
 package io.intercom.android.sdk;
 
-import io.intercom.android.sdk.api.Api;
+import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
 
 import org.apache.cordova.CallbackContext;
-import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.json.JSONException;
-import android.content.Intent;
 
-import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.os.Bundle;
-import android.os.Build;
-import android.util.Log;
-
-import io.intercom.android.sdk.identity.Registration;
-import io.intercom.android.sdk.api.CordovaHeaderInterceptor;
-import io.intercom.android.sdk.api.UserUpdateRequest;
-
-import io.intercom.android.sdk.IntercomPushManager;
-import io.intercom.android.sdk.Intercom.Visibility;
-
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Map;
 
+import io.intercom.android.sdk.Intercom.Visibility;
+import io.intercom.android.sdk.R;
+import io.intercom.android.sdk.api.CordovaHeaderInterceptor;
+import io.intercom.android.sdk.api.UserUpdateRequest;
+import io.intercom.android.sdk.identity.Registration;
+import io.intercom.android.sdk.logger.LumberMill;
 public class IntercomBridge extends CordovaPlugin {
+
+    private static final String CUSTOM_ATTRIBUTES = "custom_attributes";
 
     @Override protected void pluginInitialize() {
         cordova.getActivity().runOnUiThread(new Runnable() {
@@ -64,31 +57,54 @@ public class IntercomBridge extends CordovaPlugin {
 
     private void setUpIntercom() {
         try {
-            Context context = IntercomBridge.this.cordova.getActivity().getApplicationContext();
+            Context context = cordova.getActivity().getApplicationContext();
 
-            CordovaHeaderInterceptor.setCordovaVersion(context, "3.2.2");
+            CordovaHeaderInterceptor.setCordovaVersion(context, "5.1.1");
 
             switch (IntercomPushManager.getInstalledModuleType()) {
                 case GCM: {
-                    String senderId = IntercomBridge.this.preferences.getString("intercom-android-sender-id", null);
+                    String senderId = getSenderId(context);
+
                     if (senderId != null) {
+                        LumberMill.getLogger().d("Using GCM Sender ID: " + senderId);
                         IntercomPushManager.cacheSenderId(context, senderId);
                     }
                     break;
                 }
             }
 
-            ApplicationInfo app = context.getPackageManager().getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
-            Bundle bundle = app.metaData;
-
             //Get app credentials from config.xml or the app bundle if they can't be found
-            String apiKey = IntercomBridge.this.preferences.getString("intercom-android-api-key", bundle.getString("intercom_api_key"));
-            String appId = IntercomBridge.this.preferences.getString("intercom-app-id", bundle.getString("intercom_app_id"));
+            String apiKey = preferences.getString("intercom-android-api-key", "");
+            String appId = preferences.getString("intercom-app-id", "");
 
-            Intercom.initialize(IntercomBridge.this.cordova.getActivity().getApplication(), apiKey, appId);
+            Intercom.initialize(cordova.getActivity().getApplication(), apiKey, appId);
         } catch (Exception e) {
-            Log.e("Intercom-Cordova", "ERROR: Something went wrong when initializing Intercom. Have you set your APP_ID and ANDROID_API_KEY?");
+            Log.e("Intercom-Cordova", "ERROR: Something went wrong when initializing Intercom. Have you set your APP_ID and ANDROID_API_KEY?", e);
         }
+    }
+
+    private String getSenderId(Context context) {
+        String preferencesSenderId = preferences.getString("intercom-android-sender-id", "");
+        String resourcesSenderId;
+        try {
+            // copied from `google-services.json` in our Gradle script
+            resourcesSenderId = context.getResources().getString(R.string.intercom_gcm_sender_id);
+        }
+        catch (Exception e) {
+            LumberMill.getLogger().d(e, "Failed to get sender ID from resources: ");
+            resourcesSenderId = "";
+        }
+
+        if (preferencesSenderId.isEmpty()) {
+            return resourcesSenderId;
+        }
+
+        // sometimes the XML parser Cordova uses formats numbers with scientific notation, giving an incorrect sender ID
+        // if this is the case, fall back to the ID from the `google-services.json` file
+        if (preferencesSenderId.contains(".") && !resourcesSenderId.isEmpty()) {
+            return resourcesSenderId;
+        }
+        return preferencesSenderId;
     }
 
     private enum Action {
@@ -115,17 +131,9 @@ public class IntercomBridge extends CordovaPlugin {
                 callbackContext.success();
             }
         },
-        reset {
+        logout {
             @Override void performAction(JSONArray args, CallbackContext callbackContext, CordovaInterface cordova) {
-                Intercom.client().reset();
-                callbackContext.success();
-            }
-        },
-        setSecureMode {
-            @Override void performAction(JSONArray args, CallbackContext callbackContext, CordovaInterface cordova) {
-                String hmac = args.optString(0);
-                String data = args.optString(1);
-                Intercom.client().setSecureMode(hmac, data);
+                Intercom.client().logout();
                 callbackContext.success();
             }
         },
@@ -218,7 +226,15 @@ public class IntercomBridge extends CordovaPlugin {
         updateUser {
             @Override void performAction(JSONArray args, CallbackContext callbackContext, CordovaInterface cordova) {
                 Map<String, Object> attributes = IntercomBridge.mapFromJSON(args.optJSONObject(0));
-                Intercom.client().updateUser(attributes);
+                UserAttributes.Builder builder = new UserAttributes.Builder();
+                Object customAttributes = attributes.get(CUSTOM_ATTRIBUTES);
+                if (customAttributes instanceof Map) {
+                    //noinspection unchecked
+                    builder.customAttributes.putAll((Map<? extends String, ?>) customAttributes);
+                }
+                attributes.remove(CUSTOM_ATTRIBUTES);
+                builder.attributes.putAll(attributes);
+                Intercom.client().updateUser(builder.build());
                 callbackContext.success();
             }
         },
@@ -262,7 +278,7 @@ public class IntercomBridge extends CordovaPlugin {
         if (jsonObject == null) {
             return null;
         }
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         Iterator<String> keysIter = jsonObject.keys();
         while (keysIter.hasNext()) {
             String key = keysIter.next();
@@ -275,7 +291,7 @@ public class IntercomBridge extends CordovaPlugin {
     }
 
     private static List<Object> listFromJSON(JSONArray jsonArray) {
-        List<Object> list = new ArrayList<Object>();
+        List<Object> list = new ArrayList<>();
         for (int i = 0, count = jsonArray.length(); i < count; i++) {
             Object value = getObject(jsonArray.opt(i));
             if (value != null) {
